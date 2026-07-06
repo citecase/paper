@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Daily Gazette - Newspaper Layout App</title>
+  <!-- Google Fonts for authentic typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=UnifrakturMaguntia&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background SVG Noise Filter for realistic paper grain -->
+  <svg style="display: none;">
+    <filter id="paper-noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" stitchTiles="stitch" />
+      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.07 0" />
+    </filter>
+  </svg>
+
+  <!-- 1. LANDING PAGE SCREEN -->
+  <main id="landing-screen" class="screen active">
+    <div class="landing-background">
+      <div class="floating-newspaper"></div>
+    </div>
+    <div class="landing-content">
+      <div class="logo-area">
+        <h1 class="landing-logo">THE PRESS</h1>
+        <p class="landing-tagline">Transform any web article or writing into a stunning, authentic newspaper print.</p>
+      </div>
+
+      <div class="card landing-card">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchLandingTab('url')">Share Article URL</button>
+          <button class="tab-btn" onclick="switchLandingTab('manual')">Write From Scratch</button>
+        </div>
+
+        <!-- URL INPUT TAB -->
+        <div id="tab-url" class="tab-content active">
+          <form id="url-form" onsubmit="handleUrlSubmit(event)">
+            <div class="input-group">
+              <label for="article-url">Article Address (URL)</label>
+              <div class="input-with-button">
+                <input type="url" id="article-url" placeholder="https://example.com/editorial-news..." required>
+                <button type="submit" class="btn btn-primary">Format</button>
+              </div>
+            </div>
+          </form>
+          <div class="quick-examples">
+            <span>Try these templates:</span>
+            <button class="btn btn-pill" onclick="loadExample('https://en.wikipedia.org/wiki/Printing_press')">Wikipedia: Printing Press</button>
+            <button class="btn btn-pill" onclick="loadExample('https://en.wikipedia.org/wiki/Journalism')">Wikipedia: Journalism</button>
+          </div>
+        </div>
+
+        <!-- MANUAL INPUT TAB -->
+        <div id="tab-manual" class="tab-content">
+          <form id="manual-form" onsubmit="handleManualSubmit(event)">
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="manual-title">Headline / Title</label>
+                <input type="text" id="manual-title" placeholder="BREAKING NEWS: The Printing Press Reimagined" required>
+              </div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="manual-author">Reporter / Byline</label>
+                  <input type="text" id="manual-author" placeholder="Jane Doe" value="Staff Correspondent">
+                </div>
+                <div class="input-group">
+                  <label for="manual-site">Publication / Source</label>
+                  <input type="text" id="manual-site" placeholder="The Chronicle" value="The Daily Press">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="manual-image">Hero Image URL (Optional)</label>
+                <input type="url" id="manual-image" placeholder="https://images.unsplash.com/photo-...">
+              </div>
+              <div class="input-group">
+                <label for="manual-content">Article Text</label>
+                <textarea id="manual-content" rows="6" placeholder="Paste your article body here... Use paragraphs to separate columns cleanly." required></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Generate Newspaper</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 2. LOADING SCREEN -->
+  <section id="loading-screen" class="screen">
+    <div class="loading-container">
+      <div class="printing-press-animation">
+        <div class="roller-top"></div>
+        <div class="paper-sheet"></div>
+        <div class="roller-bottom"></div>
+      </div>
+      <h2 id="loading-status">Spinning the printing presses...</h2>
+      <p class="loading-sub">Assembling headers, layouts, and ink density.</p>
+    </div>
+  </section>
+
+  <!-- 3. MAIN WORKSPACE SCREEN -->
+  <section id="workspace-screen" class="screen">
+    <!-- TOP BAR (FLUID RESPONSIVE) -->
+    <header class="workspace-header">
+      <div class="header-branding">
+        <button class="btn btn-icon" onclick="showLanding()" title="Back to Landing">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span class="workspace-title">The Press Engine</span>
+      </div>
+      <div class="quick-actions">
+        <button class="btn btn-secondary" onclick="openEditModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4z"></path></svg>
+          Edit
+        </button>
+        <button class="btn btn-secondary" onclick="downloadPNG()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export PNG
+        </button>
+        <button class="btn btn-primary" onclick="window.print()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print / PDF
+        </button>
+      </div>
+    </header>
+
+    <div class="workspace-body">
+      <!-- SIDEBAR CONTROLS (COLLAPSIBLE) -->
+      <aside class="control-panel" id="control-panel">
+        <div class="control-section">
+          <h3>Masthead Options</h3>
+          <div class="input-group">
+            <label for="cfg-masthead-title">Paper Banner Title</label>
+            <input type="text" id="cfg-masthead-title" value="THE DAILY CHRONICLE" oninput="updateLayout()">
+          </div>
+          <div class="input-group">
+            <label for="cfg-masthead-font">Banner Font Style</label>
+            <select id="cfg-masthead-font" onchange="updateLayout()">
+              <option value="font-blackletter" selected>Gothic Blackletter</option>
+              <option value="font-decorative">Cinzel Decorative</option>
+              <option value="font-classic-serif">Traditional Playfair</option>
+              <option value="font-cyber">Digital Monospace</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="cfg-masthead-motto">Paper Motto</label>
+            <input type="text" id="cfg-masthead-motto" value="All the news fit to print. Vol. I No. 1" oninput="updateLayout()">
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>Page Layout</h3>
+          <div class="input-group">
+            <label>Color Theme</label>
+            <div class="theme-picker">
+              <button class="theme-btn theme-vintage active" onclick="setTheme('theme-vintage')" title="Vintage Sepia"></button>
+              <button class="theme-btn theme-editorial" onclick="setTheme('theme-editorial')" title="Modern Editorial"></button>
+              <button class="theme-btn theme-classic" onclick="setTheme('theme-classic')" title="Classic Newsprint"></button>
+              <button class="theme-btn theme-cyberpunk" onclick="setTheme('theme-cyberpunk')" title="Cyberpunk Chronicle"></button>
+              <button class="theme-btn theme-indian-press" onclick="setTheme('theme-indian-press')" title="Indian Press (Times of India/The Hindu)"></button>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="cfg-columns">Layout Columns</label>
+            <select id="cfg-columns" onchange="updateLayout()">
+              <option value="cols-auto">Auto Balanced</option>
+              <option value="cols-2">2 Columns</option>
+              <option value="cols-3" selected>3 Columns</option>
+              <option value="cols-4">4 Columns</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="cfg-font-size">Body Font Size: <span id="font-size-val">100%</span></label>
+            <input type="range" id="cfg-font-size" min="70" max="140" value="100" step="5" oninput="updateLayout()">
+          </div>
+          <div class="input-group">
+            <label for="cfg-line-height">Line Spacing</label>
+            <select id="cfg-line-height" onchange="updateLayout()">
+              <option value="lh-tight">Tight</option>
+              <option value="lh-normal" selected>Normal</option>
+              <option value="lh-loose">Double</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="cfg-ink-density">Ink Density: <span id="ink-density-val">100%</span></label>
+            <input type="range" id="cfg-ink-density" min="30" max="100" value="100" step="5" oninput="updateLayout()">
+          </div>
+        </div>
+
+        <div class="control-section">
+          <h3>Custom Details</h3>
+          <div class="form-row">
+            <div class="input-group">
+              <label for="cfg-location">Edition Town</label>
+              <input type="text" id="cfg-location" value="METROPOLIS" oninput="updateLayout()">
+            </div>
+            <div class="input-group">
+              <label for="cfg-price">Price</label>
+              <input type="text" id="cfg-price" value="$0.25" oninput="updateLayout()">
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="cfg-weather">Weather</label>
+            <input type="text" id="cfg-weather" value="Sunny, 72°F" oninput="updateLayout()">
+          </div>
+        </div>
+
+        <div class="control-panel-footer">
+          <p>Double-click any text inside the newspaper to edit it instantly!</p>
+        </div>
+      </aside>
+
+      <!-- THE BROADSHEET CANVAS VIEWPORT -->
+      <main class="canvas-container">
+        <!-- BroadSheet Paper Markup -->
+        <article class="broadsheet theme-vintage cols-3 font-blackletter lh-normal" id="newspaper-paper">
+          <div class="paper-grain-overlay"></div>
+          
+          <!-- Front Page Banner / Masthead -->
+          <header class="masthead">
+            <div class="masthead-meta-top">
+              <div class="meta-item volume-issue">ESTABLISHED 1887</div>
+              <div class="meta-item edition-location" id="paper-display-location">METROPOLIS</div>
+              <div class="meta-item issue-price" id="paper-display-price">$0.25</div>
+            </div>
+            
+            <div class="masthead-logo">
+              <h1 id="paper-display-title" contenteditable="true" spellcheck="false">THE DAILY CHRONICLE</h1>
+            </div>
+
+            <div class="masthead-meta-bottom">
+              <div class="meta-item motto" id="paper-display-motto" contenteditable="true" spellcheck="false">All the news fit to print. Vol. I No. 1</div>
+              <div class="meta-item paper-date" id="paper-display-date">Monday, July 6, 2026</div>
+              <div class="meta-item paper-weather" id="paper-display-weather" contenteditable="true" spellcheck="false">Sunny, 72°F</div>
+            </div>
+          </header>
+
+          <!-- Core Newspaper Layout Grid -->
+          <div class="newspaper-content-grid">
+            
+            <!-- Lead Article Main Column -->
+            <section class="main-news-section">
+              <header class="article-header">
+                <h2 class="article-headline" id="paper-display-headline" contenteditable="true" spellcheck="false">
+                  LOCAL PRESS INTRODUCES NEW DIGITAL NEWS SHEET
+                </h2>
+                <p class="article-subhead" id="paper-display-excerpt" contenteditable="true" spellcheck="false">
+                  Beautiful vintage typography adapts dynamic web links into physical print broadsheet.
+                </p>
+                <div class="article-byline">
+                  By <span id="paper-display-author" contenteditable="true" spellcheck="false">STAFF CORRESPONDENT</span> | 
+                  Source: <span id="paper-display-source" contenteditable="true" spellcheck="false">Local Press Office</span>
+                </div>
+              </header>
+
+              <!-- Hero Media & Caption -->
+              <figure class="article-hero-figure" id="paper-hero-figure">
+                <img id="paper-display-image" src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1200&auto=format&fit=crop" alt="Hero representation">
+                <figcaption class="article-caption" id="paper-display-caption" contenteditable="true" spellcheck="false">
+                  A photographer captures the mechanical press rolling out the evening edition.
+                </figcaption>
+              </figure>
+
+              <!-- Multi-column Body Text -->
+              <div class="article-body-columns" id="paper-display-body" contenteditable="true" spellcheck="false">
+                <p>Welcome to The Press, an application designed to revive the elegance of traditional journalism in the digital age. By translating modern web content into a classic broadsheet style, it provides a focused, tactile reading experience. Every detail, from the layout grids to the typography, has been crafted to reflect the aesthetics of 19th and 20th-century newsprint.</p>
+                <p>To begin formatting your own articles, simply return to the landing page, enter any URL, and watch the printing press work. If a website is behind a paywall or has strict scrapers, you can choose the "Write From Scratch" option to copy and paste your article text directly. You can edit the text blocks on this page by clicking and typing on them.</p>
+                <p>Once you are satisfied with the styling, theme, and layout, use the "Print / PDF" button to print it out on physical paper or save it as a PDF document. Enjoy the nostalgia of reading the morning paper in a digital-first format.</p>
+              </div>
+            </section>
+          </div>
+        </article>
+      </main>
+    </div>
+  </section>
+
+  <!-- 4. MANUAL RICH EDIT MODAL -->
+  <dialog id="edit-modal" class="modal">
+    <div class="modal-content">
+      <header class="modal-header">
+        <h2>Edit Newspaper Copy</h2>
+        <button class="btn-close" onclick="closeEditModal()">&times;</button>
+      </header>
+      <form id="edit-form" onsubmit="handleEditModalSubmit(event)">
+        <div class="form-grid">
+          <div class="input-group">
+            <label for="edit-headline">Headline</label>
+            <input type="text" id="edit-headline" required>
+          </div>
+          <div class="input-group">
+            <label for="edit-subhead">Subtitle / Excerpt</label>
+            <input type="text" id="edit-subhead">
+          </div>
+          <div class="form-row">
+            <div class="input-group">
+              <label for="edit-author">Author</label>
+              <input type="text" id="edit-author">
+            </div>
+            <div class="input-group">
+              <label for="edit-source">Origin / Website</label>
+              <input type="text" id="edit-source">
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="edit-image">Hero Image URL</label>
+            <input type="url" id="edit-image">
+          </div>
+          <div class="input-group">
+            <label for="edit-body">Article Text (HTML/Paragraphs)</label>
+            <textarea id="edit-body" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Apply Changes</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- html2canvas for high quality PNG export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
